@@ -1,21 +1,21 @@
 <html>
-	<head>
-		<title>jack_bunny help page</title>
-		<style type="text/css">
-        	.container {
-        		padding-top: 15px;
-            }
-    	</style>
-	</head>
+ <head>
+  <title>jack_bunny</title>
+  <style type="text/css">
+     .container {
+      padding-top: 15px;
+      }
+   </style>
+ </head>
 
-	<body>
-		<div class="container">
-			<p> Here are a list of commands currently availabe on jack_bunny </p>
-			<ul>
-				{% for n in command_list %}
-				<li>{{n}}</li>
-				{% endfor %}
-			</ul>
-		</div>
-	</body>
+ <body>
+  <div class="container">
+   <p>Here is the list of commands currently availabe on jack_bunny:</p>
+   <ul>
+    {% for n in data %}
+    <li>{{n}}</li>
+    {% endfor %}
+   </ul>
+  </div>
+ </body>
 </html>

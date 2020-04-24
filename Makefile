@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 
-DOCKER_IMAGE_NAME=jack_bunny-evensi
+DOCKER_IMAGE_NAME=jack_bunny
 
 HOST_PORT=7015
 
