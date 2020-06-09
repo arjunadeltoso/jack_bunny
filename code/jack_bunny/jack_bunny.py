@@ -1,4 +1,5 @@
 import logging
+import re
 
 from flask import Flask
 from flask import redirect
@@ -15,6 +16,8 @@ logging.basicConfig(
     level=logging.DEBUG,
 )
 
+DOC_REGEX = re.compile(r"'(.*?)'(.*)", re.MULTILINE | re.DOTALL)
+
 
 def log_calls(f):
     @wraps(f)
@@ -22,6 +25,10 @@ def log_calls(f):
         logging.info(f.__name__)
         return f(*args, **kwargs)
     return decorated
+
+
+def head(l):
+    return l[0] if len(l) else None
 
 
 class UrlResponse(str):
@@ -45,7 +52,7 @@ class Commands(object):
             return UrlResponse('https://www.google.com')
 
     @log_calls
-    def d(self, arg=None):
+    def ddg(self, arg=None):
         """'d [search_query]' search DuckDuckGo"""
         if arg:
             return UrlResponse('https://duckduckgo.com/?q={0}'.format(arg))
@@ -58,7 +65,8 @@ class Commands(object):
         help_list = []
         for values in Commands.__dict__.values():
             if callable(values):
-                help_list.append(values.__doc__)
+                m = DOC_REGEX.search(values.__doc__)
+                help_list.append({'name': m.group(1), 'desc': m.group(2)})
         return TemplateResponse(template='help.html', data=help_list)
 
     # [CUSTOM SHORTCUTS] Add your company shortcuts here.
