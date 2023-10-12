@@ -11,7 +11,7 @@ server {
   # Handle all locations
   location / {
     # Pass the request to Gunicorn
-    proxy_pass http://127.0.0.1:8000;
+    proxy_pass http://127.0.0.1:7016;
 
     # Set some HTTP headers so that our app knows where the
     # request really came from
