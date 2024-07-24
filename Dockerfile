@@ -4,10 +4,11 @@ RUN apk update && apk --no-cache add nginx
 
 RUN touch /var/log/nginx/jack_bunny.log
 
+COPY code/jack_bunny/requirements.txt /tmp/requirements.txt
+RUN pip install --upgrade pip==20.0.2 && pip install --no-cache-dir -r /tmp/requirements.txt
+
 COPY code ./
 WORKDIR /jack_bunny
-
-RUN pip install --upgrade pip==20.0.2 && pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 80
 
