@@ -9,7 +9,7 @@ from functools import wraps
 
 app = Flask(__name__)
 
-LOG_FILENAME = '/var/log/nginx/bunnylol.log'
+LOG_FILENAME = "/var/log/nginx/bunnylol.log"
 logging.basicConfig(
     filename=LOG_FILENAME,
     format="%(asctime)s\t%(name)s:%(levelname)s:call:%(message)s",
@@ -18,12 +18,45 @@ logging.basicConfig(
 
 DOC_REGEX = re.compile(r"'(.*?)'(.*)", re.MULTILINE | re.DOTALL)
 
+email_regex = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
+
+
+def is_integer(input_var):
+    try:
+        int(input_var)
+        return True
+    except ValueError:
+        return False
+
+
+def is_email(input_var):
+    if re.match(email_regex, input_var):
+        return True
+    return False
+
+
+def classify_input(input_var):
+    if is_integer(input_var):
+        return (input_var, "integer")
+    elif is_email(input_var):
+        return (input_var, "email")
+    else:
+        return (input_var, "string")
+
+
+# [CUSTOM SHORTCUTS] Add your company shortcuts here.
+
+
+
+# [END CUSTOM SHORTCUTS]
+
 
 def log_calls(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         logging.info(f.__name__)
         return f(*args, **kwargs)
+
     return decorated
 
 
@@ -42,48 +75,63 @@ class TemplateResponse:
 
 
 class Commands(object):
-
     @log_calls
     def g(self, arg=None):
         """'g [search_query]' search Google"""
         if arg:
-            return UrlResponse('http://www.google.com/search?q={0}'.format(arg))
+            return UrlResponse("http://www.google.com/search?q={0}".format(arg))
         else:
-            return UrlResponse('https://www.google.com')
+            return UrlResponse("https://www.google.com")
+
+    @log_calls
+    def pai(self, arg=None):
+        """'pai [search_query]' search Perplexity.AI"""
+        if arg:
+            return UrlResponse(
+                "https://www.perplexity.ai/search?q={0}&focus=internet".format(
+                    arg
+                )
+            )
+        else:
+            return UrlResponse("https://www.perplexity.ai")
 
     @log_calls
     def ddg(self, arg=None):
         """'d [search_query]' search DuckDuckGo"""
         if arg:
-            return UrlResponse('https://duckduckgo.com/?q={0}'.format(arg))
+            return UrlResponse("https://duckduckgo.com/?q={0}".format(arg))
         else:
-            return UrlResponse('https://duckduckgo.com/')
+            return UrlResponse("https://duckduckgo.com/")
 
     @log_calls
     def help(self, arg=None):
-        """'help' returns a list of usable commands """
+        """'help' returns a list of usable commands"""
         help_list = []
         for values in Commands.__dict__.values():
+            logging.debug(values)
             if callable(values):
+                logging.debug(values.__doc__)
                 m = DOC_REGEX.search(values.__doc__)
-                help_list.append({'name': m.group(1), 'desc': m.group(2)})
-        return TemplateResponse(template='help.html', data=help_list)
+                help_list.append({"name": m.group(1), "desc": m.group(2)})
+        return TemplateResponse(template="help.html", data=help_list)
 
     # [CUSTOM SHORTCUTS] Add your company shortcuts here.
+
+
     # [END CUSTOM SHORTCUTS]
 
 
-@app.route('/')
+@app.route("/")
 def index():
-    return render_template('home.html')
+    return render_template("home.html")
 
 
-@app.route('/q/')
+@app.route("/q/")
 def route():
     # Process the query.
     try:
-        query = str(request.args.get('query', ''))
-        tokenized_query = query.split(' ', 1)
+        query = str(request.args.get("query", ""))
+        tokenized_query = query.split(" ", 1)
         search_command = tokenized_query[0].lower()
         option_args = None
         if len(tokenized_query) == 2:
@@ -99,17 +147,15 @@ def route():
         if isinstance(response, UrlResponse):
             return redirect(response)
         elif isinstance(response, TemplateResponse):
-            return render_template(
-                response.template,
-                data=response.data
-            )
+            return render_template(response.template, data=response.data)
         else:
-            raise Exception('Unknown response type')
+            raise Exception("Unknown response type")
     except Exception as e:
         # Fallback option is to google search.
-        logging.error(str(e) + ' %s' % str(request))
-        return redirect(Commands().g(query))
+        logging.error(str(e) + " %s" % str(request))
+        # logging.exception(e)
+        return redirect(Commands().pai(query))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()
