@@ -30,7 +30,7 @@ prepare-master:
 	cp code/jack_bunny/jack_bunny.py code/jack_bunny/jack_bunny.py.bak
 
 # Step 2: Remove custom shortcuts blocks
-	perl -0777 -pe 's/(# \[CUSTOM SHORTCUTS\] Add your company shortcuts here\.\n).*?(# \[END CUSTOM SHORTCUTS\]\n)/\1\2/gs' code/jack_bunny/jack_bunny.py.bak > code/jack_bunny/jack_bunny_cleaned.py
+	perl -0777 -pe 's/(.*# \[CUSTOM SHORTCUTS\] Add your company shortcuts here\.\n).*?(.*# \[END CUSTOM SHORTCUTS\]\n)/\1\2/gs' code/jack_bunny/jack_bunny.py.bak > code/jack_bunny/jack_bunny_cleaned.py
 
 # Step 3: Check out the master branch
 	git checkout master
